@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Work History Documentation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container chat-container">
+        <header class="chat-header">
+            <div class="header-left">
+                <a href="{{ url_for('dashboard') }}" class="back-link">
+                    <span class="back-arrow">←</span> Back to Dashboard
+                </a>
+            </div>
+            <div class="header-center">
+                <h1>{{ title }}</h1>
+                <div class="section-indicator">
+                    {% if current_section == 'complete' %}
+                        <span class="status-complete">Documentation Complete</span>
+                    {% else %}
+                        Section: <span class="current-section">{{ current_section.replace('_', ' ').title() }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="header-right">
+                {% if current_section == 'complete' %}
+                    <a href="{{ url_for('view_document', session_id=session_id) }}" class="btn btn-primary">View Document</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="chat-main">
+            <div class="chat-messages" id="chat-messages">
+                {% for message in messages %}
+                    <div class="message {{ message.role }}">
+                        <div class="message-content">
+                            {{ message.content|safe }}
+                        </div>
+                        {% if message.role == 'assistant' %}
+                            <div class="message-metadata">
+                                <span class="section-tag">{{ message.section.replace('_', ' ').title() }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-input">
+                <form id="chat-form" {% if current_section == 'complete' %}class="hidden"{% endif %}>
+                    <textarea id="user-input" placeholder="Type your response here..." rows="3"></textarea>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+                {% if current_section == 'complete' %}
+                    <div class="completion-message">
+                        <p>This work history documentation session is complete. You can now view your document.</p>
+                        <a href="{{ url_for('view_document', session_id=session_id) }}" class="btn btn-primary">View Document</a>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+
+        <div class="framework-sidebar">
+            <div class="framework-header">
+                <h3>Psychological Framework</h3>
+                <p>Our research-based approach to uncovering your professional experience.</p>
+            </div>
+            <div class="framework-sections">
+                <div class="framework-section {% if current_section == 'context_reinstatement' %}active{% endif %} {% if current_section in ['free_narrative', 'structured_probing', 'identity_development', 'quantitative_integration', 'complete'] %}completed{% endif %}">
+                    <div class="section-number">1</div>
+                    <div class="section-details">
+                        <h4>Context Reinstatement</h4>
+                        <p>Recreating your work environment to unlock memories</p>
+                    </div>
+                </div>
+                <div class="framework-section {% if current_section == 'free_narrative' %}active{% endif %} {% if current_section in ['structured_probing', 'identity_development', 'quantitative_integration', 'complete'] %}completed{% endif %}">
+                    <div class="section-number">2</div>
+                    <div class="section-details">
+                        <h4>Free Narrative</h4>
+                        <p>Chronological storytelling of your experience</p>
+                    </div>
+                </div>
+                <div class="framework-section {% if current_section == 'structured_probing' %}active{% endif %} {% if current_section in ['identity_development', 'quantitative_integration', 'complete'] %}completed{% endif %}">
+                    <div class="section-number">3</div>
+                    <div class="section-details">
+                        <h4>Structured Probing</h4>
+                        <p>Exploring technical, interpersonal, and organizational domains</p>
+                    </div>
+                </div>
+                <div class="framework-section {% if current_section == 'identity_development' %}active{% endif %} {% if current_section in ['quantitative_integration', 'complete'] %}completed{% endif %}">
+                    <div class="section-number">4</div>
+                    <div class="section-details">
+                        <h4>Identity Development</h4>
+                        <p>Reflecting on professional growth and impact</p>
+                    </div>
+                </div>
+                <div class="framework-section {% if current_section == 'quantitative_integration' %}active{% endif %} {% if current_section == 'complete' %}completed{% endif %}">
+                    <div class="section-number">5</div>
+                    <div class="section-details">
+                        <h4>Quantitative Integration</h4>
+                        <p>Measuring achievements with concrete metrics</p>
+                    </div>
+                </div>
+                <div class="framework-section {% if current_section == 'complete' %}active{% endif %}">
+                    <div class="section-number">✓</div>
+                    <div class="section-details">
+                        <h4>Document Generation</h4>
+                        <p>Creating your professional documentation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const sessionId = {{ session_id }};
+            
+            // Scroll to bottom of chat
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Scroll to bottom initially
+            scrollToBottom();
+            
+            // Handle form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // Add user message to UI
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'message user';
+                userMessageElement.innerHTML = `
+                    <div class="message-content">${message.replace(/\n/g, '<br>')}</div>
+                `;
+                chatMessages.appendChild(userMessageElement);
+                scrollToBottom();
+                
+                // Clear input
+                userInput.value = '';
+                
+                // Disable input while waiting for response
+                userInput.disabled = true;
+                
+                // Send message to server
+                fetch('/api/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Add AI response to UI
+                    const aiMessageElement = document.createElement('div');
+                    aiMessageElement.className = 'message assistant';
+                    
+                    const sectionName = data.section.replace('_', ' ').charAt(0).toUpperCase() + data.section.replace('_', ' ').slice(1);
+                    
+                    aiMessageElement.innerHTML = `
+                        <div class="message-content">${data.message.replace(/\n/g, '<br>')}</div>
+                        <div class="message-metadata">
+                            <span class="section-tag">${sectionName}</span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(aiMessageElement);
+                    scrollToBottom();
+                    
+                    // If session is complete, hide the input form and show completion message
+                    if (data.section === 'complete') {
+                        chatForm.classList.add('hidden');
+                        const completionMessageDiv = document.createElement('div');
+                        completionMessageDiv.className = 'completion-message';
+                        completionMessageDiv.innerHTML = `
+                            <p>This work history documentation session is complete. You can now view your document.</p>
+                            <a href="/session/${sessionId}/document" class="btn btn-primary">View Document</a>
+                        `;
+                        document.querySelector('.chat-input').appendChild(completionMessageDiv);
+                        
+                        // Update header
+                        document.querySelector('.section-indicator').innerHTML = '<span class="status-complete">Documentation Complete</span>';
+                        document.querySelector('.header-right').innerHTML = `<a href="/session/${sessionId}/document" class="btn btn-primary">View Document</a>`;
+                        
+                        // Update sidebar
+                        document.querySelectorAll('.framework-section').forEach(section => {
+                            section.classList.remove('active');
+                            if (section.querySelector('h4').textContent === 'Document Generation') {
+                                section.classList.add('active');
+                            } else {
+                                section.classList.add('completed');
+                            }
+                        });
+                    } else {
+                        // Update the current section indicator
+                        document.querySelector('.current-section').textContent = sectionName;
+                        
+                        // Update sidebar
+                        document.querySelectorAll('.framework-section').forEach(section => {
+                            section.classList.remove('active');
+                            const sectionTitle = section.querySelector('h4').textContent;
+                            
+                            if (sectionTitle === 'Context Reinstatement' && data.section === 'context_reinstatement') section.classList.add('active');
+                            else if (sectionTitle === 'Free Narrative' && data.section === 'free_narrative') section.classList.add('active');
+                            else if (sectionTitle === 'Structured Probing' && data.section === 'structured_probing') section.classList.add('active');
+                            else if (sectionTitle === 'Identity Development' && data.section === 'identity_development') section.classList.add('active');
+                            else if (sectionTitle === 'Quantitative Integration' && data.section === 'quantitative_integration') section.classList.add('active');
+                            else if (sectionTitle === 'Document Generation' && data.section === 'complete') section.classList.add('active');
+                            
+                            // Mark earlier sections as completed
+                            if (
+                                (sectionTitle === 'Context Reinstatement' && data.section !== 'context_reinstatement') ||
+                                (sectionTitle === 'Free Narrative' && !['context_reinstatement', 'free_narrative'].includes(data.section)) ||
+                                (sectionTitle === 'Structured Probing' && !['context_reinstatement', 'free_narrative', 'structured_probing'].includes(data.section)) ||
+                                (sectionTitle === 'Identity Development' && !['context_reinstatement', 'free_narrative', 'structured_probing', 'identity_development'].includes(data.section)) ||
+                                (sectionTitle === 'Quantitative Integration' && data.section === 'complete')
+                            ) {
+                                section.classList.add('completed');
+                            }
+                        });
+                    }
+                    
+                    // Re-enable input
+                    userInput.disabled = false;
+                    userInput.focus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Add error message to UI
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'message system error';
+                    errorMessageElement.innerHTML = `
+                        <div class="message-content">
+                            <p>Sorry, there was an error processing your message. Please try again.</p>
+                        </div>
+                    `;
+                    chatMessages.appendChild(errorMessageElement);
+                    scrollToBottom();
+                    
+                    // Re-enable input
+                    userInput.disabled = false;
+                    userInput.focus();
+                });
+            });
+            
+            // Auto-resize textarea
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            // Focus input on page load
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>

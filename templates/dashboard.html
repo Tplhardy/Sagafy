@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Work History Documentation Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="dashboard-header">
+            <h1>Work History Documentation Tool</h1>
+            <div class="user-controls">
+                <span class="username">{{ current_user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <h2>Your Work History Sessions</h2>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="flash-message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <div class="dashboard-actions">
+                <form action="{{ url_for('new_session') }}" method="post" class="new-session-form">
+                    <div class="form-group">
+                        <label for="title">Session Title</label>
+                        <input type="text" id="title" name="title" placeholder="E.g., Senior Developer at ABC Company">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Start New Session</button>
+                </form>
+            </div>
+            
+            <div class="sessions-container">
+                {% if sessions %}
+                    <div class="sessions-list">
+                        {% for session in sessions %}
+                            <div class="session-card">
+                                <div class="session-info">
+                                    <h3 class="session-title">{{ session.title }}</h3>
+                                    <div class="session-meta">
+                                        <span class="session-date">Created: {{ session.created_at }}</span>
+                                        <span class="session-date">Last Updated: {{ session.updated_at }}</span>
+                                        <span class="session-status">
+                                            Section: 
+                                            {% if session.current_section == 'complete' %}
+                                                <span class="status-complete">Complete</span>
+                                            {% else %}
+                                                {{ session.current_section.replace('_', ' ').title() }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="session-actions">
+                                    <a href="{{ url_for('chat', session_id=session.id) }}" class="btn btn-primary btn-sm">
+                                        {% if session.current_section == 'complete' %}
+                                            View Session
+                                        {% else %}
+                                            Continue Session
+                                        {% endif %}
+                                    </a>
+                                    {% if session.current_section == 'complete' %}
+                                        <a href="{{ url_for('view_document', session_id=session.id) }}" class="btn btn-secondary btn-sm">View Document</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>You haven't created any work history sessions yet.</p>
+                        <p>Click the "Start New Session" button to begin documenting your professional experience.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Work History Documentation Tool</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Us</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

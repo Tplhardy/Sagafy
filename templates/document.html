@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Work History Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container document-container">
+        <header class="document-header">
+            <div class="header-left">
+                <a href="{{ url_for('chat', session_id=session_id) }}" class="back-link">
+                    <span class="back-arrow">←</span> Back to Session
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="back-link">
+                    <span class="back-arrow">←</span> Dashboard
+                </a>
+            </div>
+            <div class="header-center">
+                <h1>Work History Document</h1>
+                <div class="document-title">{{ title }}</div>
+            </div>
+            <div class="header-right">
+                <button id="print-button" class="btn btn-secondary">Print</button>
+                <!-- Future: Add PDF download option -->
+            </div>
+        </header>
+
+        <main class="document-content" id="document-content">
+            <article class="work-history-document">
+                <div class="document-header-section">
+                    <h1>{{ title }}</h1>
+                    <p class="document-meta">Generated on {{ now.strftime('%B %d, %Y') }}</p>
+                </div>
+                
+                <div class="document-body">
+                    {% for section in sections %}
+                        <section class="document-section">
+                            <h2>{{ section.title }}</h2>
+                            <div class="section-content">
+                                {{ section.content|safe }}
+                            </div>
+                        </section>
+                    {% endfor %}
+                </div>
+            </article>
+        </main>
+        
+        <div class="document-sidebar">
+            <div class="sidebar-section">
+                <h3>Document Options</h3>
+                <ul class="sidebar-actions">
+                    <li><button id="print-document" class="btn btn-full">Print Document</button></li>
+                    <!-- Future enhancement -->
+                    <li><button id="download-pdf" class="btn btn-full btn-secondary" disabled>Download PDF</button></li>
+                    <li><button id="download-word" class="btn btn-full btn-secondary" disabled>Download Word</button></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Usage Tips</h3>
+                <div class="usage-tips">
+                    <p><strong>For Resumes:</strong> Extract relevant achievements and responsibilities for specific job applications.</p>
+                    <p><strong>For Cover Letters:</strong> Use detailed examples to demonstrate your experience.</p>
+                    <p><strong>For Interviews:</strong> Review this document before interviews to refresh specific details and stories.</p>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Table of Contents</h3>
+                <ul class="document-toc">
+                    {% for section in sections %}
+                        <li><a href="#section-{{ loop.index }}">{{ section.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add IDs to sections for TOC links
+            const sectionElements = document.querySelectorAll('.document-section');
+            sectionElements.forEach((section, index) => {
+                section.id = `section-${index + 1}`;
+            });
+            
+            // Print document functionality
+            document.getElementById('print-button').addEventListener('click', function() {
+                window.print();
+            });
+            
+            document.getElementById('print-document').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('.document-toc a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
