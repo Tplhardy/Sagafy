@@ -39,7 +39,7 @@ This tool uses a structured, research-backed approach to documentation:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/work-history-tool.git
+   git clone https://github.com/Tplhardy/Sagafy.git
    cd work-history-tool
    ```
 
