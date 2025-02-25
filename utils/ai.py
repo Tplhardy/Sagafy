@@ -172,7 +172,7 @@ def generate_question(user_input, message_history, section):
     try:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
-            model="gpt-4o",  # Use appropriate model
+            model="gpt-4o-mini",  # Use appropriate model
             messages=messages,
             temperature=0.7,
             max_tokens=200,
@@ -264,7 +264,7 @@ def generate_section_summary(section_name, content):
     try:
         # Call OpenAI API
         response = openai.ChatCompletion.create(
-            model="gpt-4o",  # Use appropriate model
+            model="gpt-4o-mini",  # Use appropriate model
             messages=messages,
             temperature=0.7,
             max_tokens=1000
